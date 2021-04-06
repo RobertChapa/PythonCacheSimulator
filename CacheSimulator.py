@@ -46,7 +46,7 @@ def processCommands():
 
 	# cacheSize + validbytes + tagbytes
 	memorySize = cacheSize * 1024 + numOfBlocks * (tagSize + 1) / 8
-	cost = 0
+	cost = memorySize / 1024 * 0.09
 
 
 
