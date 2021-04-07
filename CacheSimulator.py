@@ -27,7 +27,7 @@ def processCommands():
 
 	print("\nCache Simulator CS 3853 Spring 2021 - Group #1\n")
 
-	print(f"Trace File:{traceFileName}\n")
+	print(f"Trace File: {traceFileName}\n")
 	print("***** Cache Input Parameters *****")
 	print(f"Cache Size:\t\t\t{cacheSize} KB\n" + 
 		f"Block Size:\t\t\t{blockSize} bytes\n" +
@@ -61,6 +61,7 @@ def processCommands():
 		f"Cost:\t\t\t\t${cost}\n")
 
 
+	print("***** Memory Addresses *****\n")
 
 	f = open(f"{traceFileName}", "r")
 
@@ -70,8 +71,15 @@ def processCommands():
 			print(f"0x{line[10:18]}: ", end="") # characters 10 through 18 (exclusive) is address
 			print(f"(00{line[5:7]})") # character 5 and 6 is the length
 			count += 1
-			if count >= 20: 
-				break
+		elif "dstM" in line:
+			if line[6:14] != "00000000":
+				print(f"0x{line[6:14]}: (0004)") # characters 10 through 18 (exclusive) is address
+				count += 1
+			if line[33:41] != "00000000":
+				print(f"0x{line[33:41]}: (0004)") # characters 10 through 18 (exclusive) is address
+				count += 1
+		if count >= 20: 
+			break
 	f.close()
 
 def main():
