@@ -1,3 +1,0 @@
-# PythonCacheSimulator
-
-Test.
