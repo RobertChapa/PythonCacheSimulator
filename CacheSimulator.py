@@ -1,4 +1,6 @@
 import sys
+import numpy
+import re
 
 from math import log
 
@@ -66,26 +68,12 @@ def processCommands():
 		f"Cost:\t\t\t\t${cost}\n")
 
 
-	# print("***** Memory Addresses *****\n")
-
-	# f = open(f"{traceFileName}", "r")
-
-	# count = 0
-	# for line in f:
-	# 	if "EIP" in line:
-	# 		print(f"0x{line[10:18]}: ", end="") # characters 10 through 18 (exclusive) is address
-	# 		print(f"(00{line[5:7]})") # character 5 and 6 is the length
-	# 		count += 1
-	# 	elif "dstM" in line:
-	# 		if line[6:14] != "00000000":
-	# 			print(f"0x{line[6:14]}: (0004)") # characters 10 through 18 (exclusive) is address
-	# 			count += 1
-	# 		if line[33:41] != "00000000":
-	# 			print(f"0x{line[33:41]}: (0004)") # characters 10 through 18 (exclusive) is address
-	# 			count += 1
-	# 	if count >= 20: 
-	# 		break
-	# f.close()
+	print("***** Memory Addresses *****\n")
+	try:
+		f = open(f"{traceFileName}", "r")
+	except FileNotFoundError:
+		print(f"File {traceFileName} not found.")
+		sys.exit(2)
 
 	##################################################################################################
 	##################################################################################################
@@ -95,11 +83,106 @@ def processCommands():
 
 	#############################			Assignment 2			##############################
 
+	totalCycles = 0
+
+	# CACHE SIMULATION RESULT variables
 	cacheAccesses = 0
 	cacheHits = 0
 	cacheMisses = 0
 	compMisses = 0
 	confMisses = 0
+
+	# CACHE HIT & MISS RATE variables
+	hitRate = 0
+	missRate = 0
+	CPI = 0
+	unusedCacheSpace = 0
+	unusedCacheBlocks = 0
+
+	rows = int(cacheSize/associativity)
+	cache = dict()
+	for row in range(0, rows):
+		fullCache = []
+		for blocks in range (0, associativity):
+			rowContent = ['0', '00000000']
+			fullCache.append(rowContent)
+		cache[row] = fullCache
+
+	# print(cache)
+
+	print(f"\t\t\t\t\t\t\t\t\t\tCache is a {rows}x{associativity}")
+
+
+	count = 0
+	for line in f:
+		count += 1
+	f.close()
+
+	numOfinstructions = count // 3
+
+
+	EIP = re.compile(r'EIP\s\((\d{2})\):\s(\w{8})')
+	dstSrc = re.compile(r'dstM:\s(\w{8})\s.{8}\s\s\s\ssrcM:\s(\w{8})')
+
+	count = 0
+
+	try:
+		f = open(traceFileName, "r")
+	except FileNotFoundError:
+		print(f"File {traceFileName} not found.")
+		sys.exit(2)
+
+	lst = []
+	for line in f:
+		isEIP = EIP.search(line.rstrip())
+		isDstSrc = dstSrc.search(line.rstrip())
+
+		if isEIP:
+			instructionLength = int(isEIP.group(1))
+			instructionAddress = hex(int(isEIP.group(2), 16))
+
+			# converts number to binary and adds zeroes in beginning to have full 32 bits
+			binary = (bin(int(isEIP.group(2), 16)))[2:].zfill(32)
+			# print(binary)
+
+			# print(f"\nTagsize: {tagSize}\nIndex: {indexSize}\nOffset: {offsetSize}")
+			# assigns tag, index, and offset bits
+			tagBits = binary[:tagSize+1]
+			indexBits = binary[tagSize+1:-offsetSize+1]
+			offsetBits = binary[-offsetSize:]
+
+			# store address in list 
+			lst.append({'tag': hex(int(tagBits, 2)), 'index': hex(int(indexBits, 2)), 'offset': hex(int(offsetBits, 2))})
+			# print(f"\ntagBits: {tagBits}\nindexBits: {indexBits}\noffsetBits: {offsetBits}")
+
+		elif isDstSrc:
+			dst = isDstSrc.group(1)
+			src = isDstSrc.group(2)
+
+			# add number of cycles for this instruction
+			if dst != '00000000' and src != '00000000':
+				totalCycles += 2
+			elif dst != '00000000' or src != '00000000':
+				totalCycles += 1
+		else:
+			# line is empty... thus perform actual cache calculations with the addresses in the lst
+			pass
+
+
+		# if "EIP" in line:
+		# 	count += 1
+		# elif "dstM" in line:
+		# 	if line[6:14] != "00000000":
+		# 		count += 1
+		# 	if line[33:41] != "00000000":
+		# 		count += 1
+	f.close()
+
+	# for val in lst:
+	# 	print(f"{val}\n")
+
+
+	# addresses are: tag | index | offset
 
 	print("\n***** CACHE SIMULATION RESULTS *****\n")
 
@@ -111,13 +194,6 @@ def processCommands():
 
 
 
-
-
-	hitRate = 0
-	missRate = 0
-	CPI = 0
-	unusedCacheSpace = 0
-	unusedCacheBlocks = 0
 
 	print("\n***** ***** CACHE HIT & MISS RATE: ***** *****\n")
 
