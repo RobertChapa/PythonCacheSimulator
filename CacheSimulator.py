@@ -141,7 +141,7 @@ def processCommands():
 			instructionLength = int(isEIP.group(1))
 			instructionAddress = hex(int(isEIP.group(2), 16))
 
-			# converts number to binary and adds zeroes in beginning to have full 32 bits
+			# converts address to binary and adds zeroes in beginning to have full 32 bits
 			binary = (bin(int(isEIP.group(2), 16)))[2:].zfill(32)
 			# print(binary)
 
@@ -160,9 +160,9 @@ def processCommands():
 			src = isDstSrc.group(2)
 
 			# add number of cycles for this instruction
-			if dst != '00000000' and src != '00000000':
+			if dst != "00000000" and src != "00000000":
 				totalCycles += 2
-			elif dst != '00000000' or src != '00000000':
+			elif dst != "00000000" or src != "00000000":
 				totalCycles += 1
 		else:
 			# line is empty... thus perform actual cache calculations with the addresses in the lst
@@ -178,8 +178,8 @@ def processCommands():
 		# 		count += 1
 	f.close()
 
-	# for val in lst:
-	# 	print(f"{val}\n")
+	for val in lst:
+		print(f"{val}\n")
 
 
 	# addresses are: tag | index | offset
